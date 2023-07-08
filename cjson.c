@@ -63,7 +63,10 @@ JObject_destroy(JObject_t *obj)
 };
 
 char *
-JSON_stringify(JObject_t *obj)
+JSON_stringify(JObject_t *obj, void *data)
 {
+	size_t	string_s;
 
+	string_s = 0;
+	
 }

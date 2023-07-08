@@ -8,47 +8,97 @@
 #include "../cvec/cvec.h"
 #include "../cjson.h"
 
+rule_t *rules[] = {
+	&(rule_t){.keys = (char *[]){" ", "\t", "\n",NULL}, .fp = empty_f},
+	&(rule_t){.keys = (char *[]){"[",NULL}, .fp = array_f},
+	&(rule_t){.keys = (char *[]){"{",NULL}, .fp = map_f},
+	&(rule_t){.keys = (char *[]){"]", "}" ,NULL}, .fp = ret_f},
+};
 
-int	empty_p(const char **text, unsigned int *index, void *data_struct, const rule_info_t *info)
+
+int	ret_f(const char **text, unsigned int *index, void *data_struct, const rule_info_t *info)
 {
-	(void)data_struct;
-    const char *str;
-
-	str = info->key;
-    do {
-        (*index) += strlen(str);
-        str = (is_similar((const char **)info->keys, &(*text)[*index]));
-    } while (str);
-    (*text) += *index;
-    *index = 0;
-    return 0;
+	(*text) += *index;
+	*index = 0;
+	return (PARSER_BREAK);
 }
 
-int	array_p(const char **text, unsigned int *index, void *data_struct, const rule_info_t *info)
+int	empty_f(const char **text, unsigned int *index, void *data_struct, const rule_info_t *info)
 {
 	(void)data_struct;
-    const char *str;
+	const char *str;
 
-	JObject_init(data_struct, j_array);
 	str = info->key;
-    (*index) += strlen(str);
-    (*text) += *index;
-    *index = 0;
-    return 0;
+	do {
+		(*index) += strlen(str);
+		str = (is_similar((const char **)info->keys, &(*text)[*index]));
+	} while (str);
+	(*text) += *index;
+	*index = 0;
+	return 0;
+}
+
+int	array_f(const char **text, unsigned int *index, void *data_struct, const rule_info_t *info)
+{
+	(void)data_struct;
+	const char *str;
+	JObject_t	array;
+	JObject_t	*root;
+	size_t		index;
+
+	index = 0;
+	root = data_struct;
+	JObject_init(&array, j_array);
+	str = info->key;
+	(*index) += strlen(str);
+	(*text) += *index;
+	*index = 0;
+	 if (str_parser(*text, &array, rules, index) < 0)
+	 	return (-1);
+	do
+	{
+		if (!**text)
+			return (-1);
+		str = is_similar((char *[]){"]", NULL}, *text);
+	}
+	while (!str);
+	(*index) += strlen(str);
+	return 0;
+}
+
+int	map_f(const char **text, unsigned int *index, void *data_struct, const rule_info_t *info)
+{
+	(void)data_struct;
+	const char *str;
+
+	JObject_init(data_struct, j_map);
+	str = info->key;
+	(*index) += strlen(str);
+	(*text) += *index;
+	*index = 0;
+
+	do
+	{
+		if (!**text)
+			return (-1);
+		str = is_similar((char *[]){"}", NULL}, *text);
+	}
+	while (!str);
+	(*index) += strlen(str);
+	return 0;
 }
 
 int main()
 {
-    const char *s1 = "[    {       \"hello\":  \"hi\"    }]";
+	const char *s1 = "[    {       \"hello\":  \"hi\"    }  ]";
 
-    rule_t *rules[] = {
-        &(rule_t){.keys = (char *){" ", "\t", "\n",NULL}, .fp = empty_p},
-        &(rule_t){.keys = (char *){"[",NULL}, .fp = array_p},
-    };
 
-    JObject_t obj;
-    
-    str_parser(s1, &obj, rules);
+	JObject_t array;
+	size_t index;
+
+	index = 0;
+	JObject_init(&array, j_array);
+	str_parser(s1, &array, rules, &index);
 
 
 }
