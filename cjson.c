@@ -1,5 +1,6 @@
 #include "cjson.h"
 #include <string.h>
+#include <stdlib.h>
 
 int
 JObject_init(JObject_t *obj, enum jtype type)
@@ -35,4 +36,34 @@ JObject_init(JObject_t *obj, enum jtype type)
 	}
 	obj->type = type;
 	return (0);
+}
+
+void
+JObject_destroy(JObject_t *obj)
+{
+	if (!obj)
+		return (-1);
+	switch (obj->type)
+	{
+		case j_array:
+			cvec_destroy(&obj->j_array, (void (*)(void *))JObject_destroy);
+		break;
+
+		case j_map:
+			cmap_destroy(&obj->j_map, free, (void (*)(void *))JObject_destroy);
+		break;
+	
+		case j_string:
+			free(obj->j_string);
+		break;
+
+		default:
+		break;
+	}
+};
+
+char *
+JSON_stringify(JObject_t *obj)
+{
+
 }

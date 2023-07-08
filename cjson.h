@@ -28,5 +28,10 @@ typedef struct J_object_s
 
 int JSON_parse(JObject_t *obj, const char *str);
 
+int
+JObject_init(JObject_t *obj, enum jtype type);
+
+void
+JObject_destroy(JObject_t *obj);
 
 #endif
