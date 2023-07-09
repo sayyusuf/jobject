@@ -8,6 +8,7 @@
 #include "../cvec/cvec.h"
 #include "../cjson.h"
 
+
 rule_t *rules[] = {
 	&(rule_t){.keys = (char *[]){" ", "\t", "\n",NULL}, .fp = empty_f},
 	&(rule_t){.keys = (char *[]){"[",NULL}, .fp = array_f},
@@ -85,17 +86,55 @@ int	map_f(const char **text, unsigned int *index, void *data_struct, const rule_
 	return 0;
 }
 
+
+static char* ft_strdup(const char *str)
+{
+	char *s;
+
+	s = malloc(strlen(str) + 1);
+	strcpy(s, str);
+	return (s);	
+}
 int main()
 {
 	const char *s1 = "[    {       \"hello\":  \"hi\"    }  ]";
 
 
 	JObject_t array;
+	JObject_t array2;
+	JObject_t b;
+	JObject_t str;
+	JObject_t map;
+	JObject_t msg;
+	JObject_t num;
 	size_t index;
 
-	index = 0;
+	JObject_init(&b, j_bool);
+	JObject_init(&str, j_string);
 	JObject_init(&array, j_array);
-	str_parser(s1, &array, rules, &index);
+	JObject_init(&array2, j_array);
+	JObject_init(&map, j_map);
+	JObject_init(&msg, j_string);
+	JObject_init(&num, j_number);
 
+	num.j_number = 0.55552323;
+	msg.j_string = ft_strdup("hello");
+
+	cmap_insert(&map.j_map, ft_strdup("hi"), &msg);
+	cmap_insert(&map.j_map, ft_strdup("array"), &array2);
+	cmap_insert(&map.j_map, ft_strdup("num"), &num);
+
+	cvec_push(&array.j_array, &b);
+	cvec_push(&array.j_array, &str);
+	cvec_push(&array.j_array, &map);
+
+	index = 0;
+	char *s = JSON_stringify(&array);
+	printf("%s\n", s);
+	free(s);
+
+	JObject_destroy(&array);
+	//str_parser(s1, &array, rules, &index);
+	return (0);
 
 }

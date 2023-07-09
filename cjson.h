@@ -26,7 +26,12 @@ typedef struct J_object_s
     };
 } JObject_t;
 
-int JSON_parse(JObject_t *obj, const char *str);
+int
+JSON_parse(JObject_t *obj, const char *str);
+
+char *
+JSON_stringify(JObject_t *obj);
+
 
 int
 JObject_init(JObject_t *obj, enum jtype type);

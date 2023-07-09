@@ -24,7 +24,7 @@ JObject_init(JObject_t *obj, enum jtype type)
 				return (-1);
 			break;
 		case j_map:
-			if (cmap_init(&obj->j_map, (int (*)(void *, void *))strcmp, sizeof(obj->j_map)) < 0)
+			if (cmap_init(&obj->j_map, (int (*)(void *, void *))strcmp, sizeof(*obj)) < 0)
 				return (-1);
 			break;
 		default:
@@ -38,7 +38,7 @@ void
 JObject_destroy(JObject_t *obj)
 {
 	if (!obj)
-		return (-1);
+		return ;
 	switch (obj->type)
 	{
 		case j_array:
@@ -55,7 +55,7 @@ JObject_destroy(JObject_t *obj)
 	}
 };
 
-static ft_strdup(const char *str)
+static char* ft_strdup(const char *str)
 {
 	char *s;
 
@@ -84,20 +84,38 @@ J_number_stringify(J_number num)
 char *
 J_string_stringify(J_string str)
 {
-	return (ft_strdup(str));	
+	char *s;
+	size_t len;
+
+	len = 0;
+	if (str)
+		len = strlen(str);
+	s = malloc(len + 3);
+	*s = 0;
+	strcat(s, "\"");
+	if (str)
+		strcat(s, str);
+	strcat(s, "\"");
+	return (s);	
 }
 
 void arry_callback(void *element_addr, void *any)
 {
 	JObject_t *obj = ((JObject_t *)element_addr);
 	cvec_t *vec = any;
-	char *s = JSON_stringify(obj);
+	char *s;
+	if (vec->size > 1)
+	{
+		s = ft_strdup(",");
+		cvec_push(vec, &s);
+	}
+	s = JSON_stringify(obj);
 	cvec_push(vec, &s);
 }
 
 void str_size(void *element_addr, void *any)
 {
-	const *s = *((char **)element_addr);
+	char *s = *((char **)element_addr);
 	size_t	*i = any;
 
 	(*i) += strlen(s);
@@ -134,6 +152,7 @@ J_array_stringify(cvec_t *arry)
 	len = 0;
 	cvec_iter(&vec, &len, str_size);
 	s = malloc(len + 1);
+	*s = 0;
 	cvec_iter(&vec, s, str_join);
 	cvec_destroy(&vec, str_del);
 	return (s);	
@@ -145,13 +164,25 @@ void	map_callback(void *key, void *val_addr, void *any)
 	JObject_t *obj = ((JObject_t *)val_addr);
 	cvec_t *vec = any;
 	char *str;
+	char *s;
+	char *tmp;
+	size_t len;
 
-	char *s = JSON_stringify(obj);
-	str = malloc(strlen(s) + strlen(key) + 2);
-	strcat(str, key);
+	if (vec->size > 1)
+	{
+		s = ft_strdup(",");
+		cvec_push(vec, &s);
+	}
+	tmp = J_string_stringify(key);
+	s = JSON_stringify(obj);
+	len = strlen(s) + strlen(tmp) + 2;
+	str = malloc(len);
+	*str = 0;
+	strcat(str, tmp);
 	strcat(str, ":");
 	strcat(str, s);
 	free(s);
+	free(tmp);
 	cvec_push(vec, &str);
 }
 
@@ -172,6 +203,7 @@ J_map_stringify(cmap_t *map)
 	len = 0;
 	cvec_iter(&vec, &len, str_size);
 	s = malloc(len + 1);
+	*s = 0;
 	cvec_iter(&vec, s, str_join);
 	cvec_destroy(&vec, str_del);
 	return (s);	
@@ -182,7 +214,7 @@ char *
 JSON_stringify(JObject_t *obj)
 {
 	if (!obj)
-		return (-1);
+		return (NULL);
 	switch (obj->type)
 	{
 		case j_bool:
