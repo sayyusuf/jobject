@@ -44,25 +44,20 @@ int	array_f(const char **text, unsigned int *index, void *data_struct, const rul
 	const char *str;
 	JObject_t	array;
 	JObject_t	*root;
-	size_t		index;
+	size_t		i;
 
-	index = 0;
+	i = 0;
 	root = data_struct;
 	JObject_init(&array, j_array);
 	str = info->key;
 	(*index) += strlen(str);
 	(*text) += *index;
 	*index = 0;
-	 if (str_parser(*text, &array, rules, index) < 0)
+	 if (str_parser(*text, &array, rules, &i) < 0)
 	 	return (-1);
-	do
-	{
-		if (!**text)
-			return (-1);
-		str = is_similar((char *[]){"]", NULL}, *text);
-	}
-	while (!str);
-	(*index) += strlen(str);
+	*text = &((*text)[i]);
+
+
 	return 0;
 }
 
@@ -70,21 +65,23 @@ int	map_f(const char **text, unsigned int *index, void *data_struct, const rule_
 {
 	(void)data_struct;
 	const char *str;
+	JObject_t	map;
+	JObject_t	*root;
+	size_t		i;
 
-	JObject_init(data_struct, j_map);
+	i = 0;
+	root = data_struct;
+	JObject_init(&map, j_map);
 	str = info->key;
 	(*index) += strlen(str);
 	(*text) += *index;
 	*index = 0;
+	 if (str_parser(*text, &map, rules, &i) < 0)
+	 	return (-1);
+	*text = &((*text)[i]);
+	(void)data_struct;
+	const char *str;
 
-	do
-	{
-		if (!**text)
-			return (-1);
-		str = is_similar((char *[]){"}", NULL}, *text);
-	}
-	while (!str);
-	(*index) += strlen(str);
 	return 0;
 }
 
