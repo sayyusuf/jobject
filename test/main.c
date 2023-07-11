@@ -40,7 +40,7 @@ int	quotes_f(const char **text, unsigned int *index, void *data_struct, const ru
 
 const rule_t *rules[] = {
 	&(rule_t){.keys = (char *[]){" ", "\t", "\n",NULL}, .fp = empty_f},
-	&(rule_t){.keys = (char *[]){"[", "]", "{", "}", ":", ",", "true", "false" ,NULL}, .fp = keys_f},
+	&(rule_t){.keys = (char *[]){"[", "]", "{", "}", ":", ",", "true", "false", "null" ,NULL}, .fp = keys_f},
 	&(rule_t){.keys = (char *[]){"\"",NULL}, .fp = quotes_f},
 	&(rule_t){.keys = (char *[]){".", "0", "1", "2", "3", "4", "5","6", "7", "8", "9",NULL}, .fp = numbers_f},
 	NULL
