@@ -4,6 +4,6 @@
 [submodule "cmap"]
 	path = cmap
 	url = https://github.com/sayyusuf/cmap.git
-[submodule "str_parser"]
-	path = str_parser
-	url = https://github.com/sayyusuf/str_parser.git
+[submodule "str_lexer"]
+	path = str_lexer
+	url = https://github.com/sayyusuf/str_lexer.git
