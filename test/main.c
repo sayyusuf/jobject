@@ -18,7 +18,7 @@ static char *ft_strdup(const char *str)
 	return (s);	
 }
 
-/*
+
 
 static char *ft_strndup(const char *str, size_t n)
 {
@@ -130,7 +130,7 @@ void destroy(void *data_addr)
 
 
 
-J_bool bool_parser(const char *s)
+bool_t bool_parser(const char *s)
 {
 	if (!strcmp("true", s))
 		return (1);
@@ -138,9 +138,9 @@ J_bool bool_parser(const char *s)
 		return (0);
 }
 
-J_number number_parser(const char *s)
+number_t number_parser(const char *s)
 {
-	J_number	num;
+	number_t	num;
 
 	sscanf(s, "%lf", &num);
 	return (num);
@@ -151,15 +151,15 @@ int detect_object(char *)
 
 }
 
-J_string string_parser(const char *s)
+string_t string_parser(const char *s)
 {
-	J_string str;
+	string_t str;
 	str = ft_strdup(s + 1);
 	str[strlen(str) - 1] = 0;
 	return (str);
 }
 
-J_map map_parser(cvec_t *vec, JObject_t *map);
+map_t map_parser(cvec_t *vec, JObject_t *map);
 {
 	J_map map;
 	cvec_init(&map, sizeof(JObject_t), 4);
@@ -169,12 +169,13 @@ int JObject_parser(cvec_t *vec, JObject_t *obj)
 {
 	char *s;
 	s = NULL;
+
 	cvec_get(vec, &s, 0);
 	cvec_erase(vec, 0, NULL);
 	if (!strcmp(s, "["))
 	{
 		free(s);
-		JObject_init(obj, j_array);
+		JObject_init(obj, array_e);
 		while (1)
 		{
 			JObject_t any;
@@ -186,18 +187,18 @@ int JObject_parser(cvec_t *vec, JObject_t *obj)
 				return (-1);
 			if (!strcmp("true", s) || !strcmp("false", s))
 			{
-				JObject_init(&any, j_bool);
-				any.j_bool = bool_parser(s);
+				JObject_init(&any, boolean_e);
+				any.data.boolean = bool_parser(s);
 			}
 			else if (s[0] >= '0' || s[0 <= '9'])
 			{
-				JObject_init(&any, j_number);
-				any.j_number = number_parser(s);
+				JObject_init(&any, number_e);
+				any.data.number = number_parser(s);
 			}
 			else if (s[0] == '\"')
 			{
-				JObject_init(&any, j_string);
-				any.j_string = string_parser(s);
+				JObject_init(&any, string_e);
+				any.data.string = string_parser(s);
 			}
 			else if (!strcmp("[", s) || !strcmp("{", s))
 			{
@@ -209,12 +210,12 @@ int JObject_parser(cvec_t *vec, JObject_t *obj)
 	}
 
 }
-*/
+
 
 int main()
 {
 	const char *s1 = "[    {       \"hello\":  \"hi\"    }, true, 0.23234545345 ]";
-
+/*
 	size_t index;
 
 	JObject_t array;
@@ -225,30 +226,35 @@ int main()
 	JObject_t msg;
 	JObject_t num;
 
-	JObject_init(&b, boolean_e);
-	JObject_init(&str, string_e);
-	JObject_init(&array, array_e);
-	JObject_init(&array2, array_e);
-	JObject_init(&map, map_e);
-	JObject_init(&msg, string_e);
-	JObject_init(&num, number_e);
+	b = JObject_boolean_new();
+	str = JObject_string_new();
+	array = JObject_array_new();
+	array2 = JObject_array_new();
+	map = JObject_map_new();
+	msg = JObject_string_new();
+	num = JObject_string_new();
 
-	num.data.number = 0.55552323;
-	msg.data.string = ft_strdup("hello");
+	JObject_number_set(&num, 0.55555552323);
+	JObject_string_set(&msg, "hello");
+	
+	JObject_map_insert(&map, "hi", &msg);
+	JObject_map_insert(&map, "array", &array2);
+	JObject_map_insert(&map, "num", &num);
 
-	cmap_insert(&map.data.map, ft_strdup("hi"), &msg);
-	cmap_insert(&map.data.map, ft_strdup("array"), &array2);
-	cmap_insert(&map.data.map, ft_strdup("num"), &num);
+	JObject_array_push(&array, &b);
+	JObject_array_push(&array, &str);
+	JObject_array_push(&array, &map);
 
-	cvec_push(&array.data.array, &b);
-	cvec_push(&array.data.array, &str);
-	cvec_push(&array.data.array, &map);
 
 	index = 0;
 	char *s = JSON_stringify(&array);
 	printf("%s\n", s);
 	free(s);
-/*
+
+
+	JObject_destroy(&array);
+*/
+
 
 	size_t index;
 	cvec_t	vec;
@@ -260,8 +266,6 @@ int main()
 	cvec_destroy(&vec, destroy);
 
 
-
-*/
 	return (0);
 
 }
