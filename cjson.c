@@ -3,6 +3,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static char *ft_strdup(const char *str)
+{
+	char *s;
+
+	s = malloc(strlen(str) + 1);
+	strcpy(s, str);
+	return (s);	
+}
+
+JObject_t
+JObject_new(enum jtype type)
+{
+	JObject_t obj;
+	JObject_init(&obj, type);
+	return (obj);
+}
+
 int
 JObject_init(JObject_t *obj, enum jtype type)
 {
@@ -10,21 +27,23 @@ JObject_init(JObject_t *obj, enum jtype type)
 		return (-1);
 	switch (type)
 	{
-		case j_bool:
-			obj->j_bool = 0;
+		case null_e:
 			break;
-		case j_number:
-			obj->j_number = 0;
+		case boolean_e:
+			obj->data.boolean = 0;
 			break;
-		case j_string:
-			obj->j_string = NULL;
+		case number_e:
+			obj->data.number = 0;
 			break;
-		case j_array:
-			if (cvec_init(&obj->j_array, sizeof(*obj), 4) < 0)
+		case string_e:
+			obj->data.string = NULL;
+			break;
+		case array_e:
+			if (cvec_init(&obj->data.array, sizeof(*obj), 4) < 0)
 				return (-1);
 			break;
-		case j_map:
-			if (cmap_init(&obj->j_map, (int (*)(void *, void *))strcmp, sizeof(*obj)) < 0)
+		case map_e:
+			if (cmap_init(&obj->data.map, (int (*)(void *, void *))strcmp, sizeof(*obj)) < 0)
 				return (-1);
 			break;
 		default:
@@ -41,39 +60,282 @@ JObject_destroy(JObject_t *obj)
 		return ;
 	switch (obj->type)
 	{
-		case j_array:
-			cvec_destroy(&obj->j_array, (void (*)(void *))JObject_destroy);
+		case array_e:
+			cvec_destroy(&obj->data.array, (void (*)(void *))JObject_destroy);
 			break;
-		case j_map:
-			cmap_destroy(&obj->j_map, free, (void (*)(void *))JObject_destroy);
+		case map_e:
+			cmap_destroy(&obj->data.map, free, (void (*)(void *))JObject_destroy);
 			break;
-		case j_string:
-			free(obj->j_string);
+		case string_e:
+			free(obj->data.string);
 			break;
 		default:
 			break;
 	}
 };
 
-static char* ft_strdup(const char *str)
+int
+JObject_match(JObject_t *obj, void *any, Jobject_match_t *match)
 {
-	char *s;
+	int (*f)(JObject_t *obj, void *any);
 
-	s = malloc(strlen(str) + 1);
-	strcpy(s, str);
-	return (s);	
+	if (!obj || !match)
+		return (-1);
+	switch (obj->type)
+	{
+		case undef_e:
+			f = match->undef;		
+			break;
+		case null_e:
+			f = match->null;
+			break;
+		case boolean_e:
+			f = match->boolean;
+			break;
+		case number_e:
+			f = match->number;
+			break;
+		case string_e:
+			f = match->string;
+			break;
+		case array_e:
+			f = match->array;	
+			break;
+		case map_e:
+				f = match->map;
+			break;
+		default:
+			return (-1);
+	}
+	if (!f)
+		return (-1);
+	return (f(obj, any));
 }
 
-char *
-J_bool_stringify(J_bool b)
+//********************************************************************************
+
+JObject_t
+JObject_boolean_new(void)
+{
+	return (JObject_new(boolean_e));
+}
+
+uint8_t
+JObject_boolean_get(JObject_t *obj, int *ret)
+{
+	if (!ret || !obj || obj->type != boolean_e)
+		return (0);
+	return (obj->data.boolean);
+}
+
+int
+JObject_boolean_set(JObject_t *obj, uint8_t value)
+{
+	if (obj && obj->type == boolean_e)
+		obj->data.boolean = value;
+	else
+		return (-1);
+	return (0);
+}
+
+//**********************************************************
+JObject_t
+JObject_number_new(void)
+{
+	return (JObject_new(number_e));
+}
+
+double
+JObject_number_get(JObject_t *obj)
+{
+	if (!obj || obj->type != number_e)
+		return (0);
+	return (obj->data.number);
+}
+
+int
+JObject_number_set(JObject_t *obj, double value)
+{
+	if (obj && obj->type == number_e)
+		obj->data.boolean = value;
+	else
+		return (-1);
+	return (0);
+}
+//********************************************************
+JObject_t
+JObject_string_new(void)
+{
+	return (JObject_new(string_e));
+}
+
+
+const char  *
+JObject_string_get(JObject_t *obj)
+{
+	if (!obj || obj->type != string_e)
+		return (NULL);
+	return (obj->data.string);
+}
+
+int
+JObject_string_set(JObject_t *obj, const char *str)
+{
+	if (obj && obj->type == string_e && str)
+	{
+		if (obj->data.string)
+			free(obj->data.string);
+		obj->data.string =  ft_strdup(str);
+		if (!obj->data.string)
+			return (-1);
+	}
+	else
+		return (-1);
+	return (0);
+}
+
+
+JObject_t
+JObject_array_new(void)
+{
+	return (JObject_new(array_e));
+}
+
+size_t 
+JObject_array_size(JObject_t *obj)
+{
+	if (!obj || obj->type != array_e)
+		return (0);
+	return (obj->data.array.size);
+}
+
+int
+JObject_array_push(JObject_t *obj, JObject_t *addr)
+{
+	if (!obj || obj->type != array_e || !addr || addr->type == undef_e)
+		return (-1);
+	return (cvec_push(&obj->data.array, addr));
+}
+
+JObject_t
+JObject_array_pop(JObject_t *obj)
+{
+	JObject_t	ret;
+
+	if (!obj || obj->type != array_e)
+		return JObject_new(undef_e);
+	if (cvec_pop(&obj->data.array, &ret) < 0)
+		return JObject_new(undef_e);
+	return (ret);
+}
+
+JObject_t
+JObject_array_get(JObject_t *obj, size_t index)
+{
+	JObject_t	ret;
+
+	if (!obj || obj->type != array_e)
+		return JObject_new(undef_e);
+	if (cvec_get(&obj->data.array, &ret, index) < 0)
+		return JObject_new(undef_e);
+	return (ret);
+}
+
+int
+JObject_array_insert(JObject_t *obj, JObject_t *addr, size_t index)
+{
+	if (!obj || obj->type != array_e || !addr || addr->type == undef_e)
+		return (-1);
+	return (cvec_insert(&obj->data.array, addr, index));
+}
+
+int
+JObject_array_erase(JObject_t *obj, size_t index)
+{
+	if (!obj || obj->type != array_e)
+		return (-1);
+	return (cvec_erase(&obj->data.array, index, (void (*)(void *))JObject_destroy));
+}
+
+int
+JObject_array_iter(JObject_t *obj, void *any,  void (*f)(JObject_t *elemnt, void *any))
+{
+	if (!obj || obj->type != array_e || !f)
+		return (-1);
+	return (cvec_iter(&obj->data.array, any, (void (*)(void *, void *))f));
+}
+
+
+
+JObject_t
+JObject_map_new(void)
+{
+	return (JObject_new(map_e));
+}
+
+int
+JObject_map_insert(JObject_t *map, const char *key, JObject_t *value)
+{
+	if (!map || map->type != map_e || !key || !value || value->type == undef_e)
+		return (-1);
+	if (cmap_insert(&map->data.map, ft_strdup(key), value) < 0)
+		return (-1);
+	return (0);
+}
+
+JObject_t
+JObject_map_find(JObject_t* map, const char *key)
+{
+	JObject_t ret;
+	if (!map || map->type != map_e || !key)
+		return (JObject_new(undef_e));
+	if (cmap_find(&map->data.map, (void *)key, &ret) < 0)
+		return (JObject_new(undef_e));
+	return (ret);
+}
+
+static void
+map_str_del(void *element_addr)
+{
+	char *s = *((char **)element_addr);
+	free(s);
+}
+
+int
+JObject_map_erase(JObject_t *map, const char *key)
+{
+	if (!map || map->type != map_e || !key)
+		return (-1);
+	return (cmap_erase(&map->data.map, (void *)key, (void (*)(void *))map_str_del, (void (*)(void *))JObject_destroy));
+}
+
+int
+JObject_map_iter(JObject_t *map, void *any,  void(*f)(const char *key, JObject_t *val_addr, void *any))
+{
+	if (!map || map->type != map_e || !f)
+		return (-1);
+	return (cmap_iter(&map->data.map, any, (void(*)(void *, void *, void *))f));
+}
+
+//****************************************************************
+
+
+static char *
+J_bool_stringify(bool_t b)
 {
 	if (b)
 		return (ft_strdup("true"));
 	return (ft_strdup("false"));
 }
 
-char *
-J_number_stringify(J_number num)
+static char *
+J_null_stringify(void)
+{
+		return (ft_strdup("null"));
+}
+
+static char *
+J_number_stringify(number_t num)
 {
 	char output[50];
 
@@ -81,8 +343,8 @@ J_number_stringify(J_number num)
 	return (ft_strdup(output));	
 }
 
-char *
-J_string_stringify(J_string str)
+static char *
+J_string_stringify(string_t str)
 {
 	char *s;
 	size_t len;
@@ -99,7 +361,8 @@ J_string_stringify(J_string str)
 	return (s);	
 }
 
-void arry_callback(void *element_addr, void *any)
+static void
+arry_callback(void *element_addr, void *any)
 {
 	JObject_t *obj = ((JObject_t *)element_addr);
 	cvec_t *vec = any;
@@ -113,7 +376,8 @@ void arry_callback(void *element_addr, void *any)
 	cvec_push(vec, &s);
 }
 
-void str_size(void *element_addr, void *any)
+static void
+str_size(void *element_addr, void *any)
 {
 	char *s = *((char **)element_addr);
 	size_t	*i = any;
@@ -121,21 +385,23 @@ void str_size(void *element_addr, void *any)
 	(*i) += strlen(s);
 }
 
-void str_join(void *element_addr, void *any)
+static void
+str_join(void *element_addr, void *any)
 {
 	char *s = *((char **)element_addr);
 	char 	*str = any;
 	strcat(str, s);
 }
 
-void str_del(void *element_addr)
+static void
+str_del(void *element_addr)
 {
 	char *s = *((char **)element_addr);
 	free(s);
 }
 
 
-char *
+static char *
 J_array_stringify(cvec_t *arry)
 {
 
@@ -159,7 +425,8 @@ J_array_stringify(cvec_t *arry)
 }
 
 
-void	map_callback(void *key, void *val_addr, void *any)
+static void
+map_callback(void *key, void *val_addr, void *any)
 {
 	JObject_t *obj = ((JObject_t *)val_addr);
 	cvec_t *vec = any;
@@ -186,7 +453,7 @@ void	map_callback(void *key, void *val_addr, void *any)
 	cvec_push(vec, &str);
 }
 
-char *
+static char *
 J_map_stringify(cmap_t *map)
 {
 
@@ -217,16 +484,18 @@ JSON_stringify(JObject_t *obj)
 		return (NULL);
 	switch (obj->type)
 	{
-		case j_bool:
-			return (J_bool_stringify(obj->j_bool));
-		case j_number:
-			return (J_number_stringify(obj->j_number));
-		case j_string:
-			return (J_string_stringify(obj->j_string));
-		case j_array:
-			return (J_array_stringify(&obj->j_array));
-		case j_map:
-			return (J_map_stringify(&obj->j_map));
+		case null_e:
+			return (J_null_stringify());
+		case boolean_e:
+			return (J_bool_stringify(obj->data.boolean));
+		case number_e:
+			return (J_number_stringify(obj->data.number));
+		case string_e:
+			return (J_string_stringify(obj->data.string));
+		case array_e:
+			return (J_array_stringify(&obj->data.array));
+		case map_e:
+			return (J_map_stringify(&obj->data.map));
 		default:
 			return (NULL);
 	}
