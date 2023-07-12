@@ -296,7 +296,7 @@ int array_parser(cvec_t *vec, JObject_t *obj)
 	{
 		if (cvec_get(vec, &s, 0)< 0)
 			return (-1);
-		if (!(wait_v && detect(s, str)))
+		if (!(wait_v & detect(s, str)))
 		{
 			free(s);
 			return (-1);
@@ -349,7 +349,7 @@ int map_parser(cvec_t *vec, JObject_t *obj)
 	{
 		if (cvec_get(vec, &s, 0)< 0)
 			return (-1);
-		if (!(wait_v && detect(s, str)))
+		if (!(wait_v & detect(s, str)))
 		{
 			if (key)
 				free(key);
@@ -431,7 +431,7 @@ int JObject_parser(cvec_t *vec, JObject_t *obj)
 
 int main()
 {
-	const char *s1 = "[    {       \"hello\":  \"hi\"    }, true, 0.23234545345, null ]";
+	const char *s1 = "[   { \"dd\": 555555,  \"hello\":  \"hi\"    }, true, 0.23234545345, null]";
 /*
 	size_t index;
 
@@ -478,12 +478,18 @@ int main()
 	cvec_init(&vec, sizeof(char *), 4);
 	str_lexer(s1, &vec, rules, &index);
 
+	assert(!cvec_iter(&vec, NULL, test));
+	
 	JObject_t obj;
-	JObject_parser(&vec, &obj);
-	char * s= JSON_stringify(&obj);
+	if (!JObject_parser(&vec, &obj))	
+	{
+		char * s= JSON_stringify(&obj);
+		printf("%s\n", s);
+		free(s);
+	}
+	else
+		printf("parser error\n");
 	JObject_destroy(&obj);
-	printf("%s\n", s);
-	free(s);
 	//assert(!cvec_iter(&vec, NULL, test));
 	cvec_destroy(&vec, destroy);
 	return (0);
