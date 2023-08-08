@@ -170,10 +170,10 @@ JObject_mP_iter(JObject_t *map, void *any,  void(*f)(const char *key, JObject_t 
 
 
 int
-JSON_parse(JObject_t *obj, const char *str);
+JObject_parser(cvec_t *vec, JObject_t *obj);
 
 char *
-JSON_stringify(JObject_t *obj);
+JObject_stringify(JObject_t *obj);
 
 
 int

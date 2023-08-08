@@ -64,7 +64,7 @@ arry_callback(void *element_addr, void *any)
 		s = ft_strdup(",");
 		cvec_push(vec, &s);
 	}
-	s = JSON_stringify(obj);
+	s = JObject_stringify(obj);
 	cvec_push(vec, &s);
 }
 
@@ -133,7 +133,7 @@ map_callback(void *key, void *val_addr, void *any)
 		cvec_push(vec, &s);
 	}
 	tmp = J_string_stringify(key);
-	s = JSON_stringify(obj);
+	s = JObject_stringify(obj);
 	len = strlen(s) + strlen(tmp) + 2;
 	str = malloc(len);
 	*str = 0;
@@ -170,7 +170,7 @@ J_map_stringify(cmap_t *map)
 
 
 char *
-JSON_stringify(JObject_t *obj)
+JObject_stringify(JObject_t *obj)
 {
 	if (!obj)
 		return (NULL);

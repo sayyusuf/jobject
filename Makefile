@@ -4,16 +4,16 @@ _SRC = jobject.c stringify.c parser.c
 
 _OBJ = $(_SRC:.c=.o)
 
-EXLIB1 = cvec
-EXLIB1PATH = cvec
+EXLIB1 = str_lexer
+EXLIB1PATH = str_lexer
 EXLIB1LINK = https://github.com/sayyusuf/str_lexer.git
 
 EXLIB2 = cmap
 EXLIB2PATH = cmap
 EXLIB2LINK = https://github.com/sayyusuf/cmap.git
 
-EXLIB3 = str_lexer
-EXLIB3PATH = str_lexer
+EXLIB3 =  cvec
+EXLIB3PATH = cvec
 EXLIB3LINK = https://github.com/sayyusuf/cvec.git
 
 
@@ -44,23 +44,29 @@ $(EXLIBS):
 	$(eval INC += -I../$($@PATH))
 
 clean : 
-	rm -f $(_OBJ)
+	-rm -f $(_OBJ)
+	-@$(foreach lib,$(EXLIBS), make clean -C ../$($(lib)PATH);)
+	-@$(foreach lib,$(EXLIBS), make clean -C ./test/$($(lib)PATH);)
+
 fclean: clean
-	rm -f $(NAME)
+	-@$(foreach lib,$(EXLIBS), make fclean -C ../$($(lib)PATH);)
+	-@$(foreach lib,$(EXLIBS), rm -rf ./test/$($(lib)PATH);)
+	-rm -f $(NAME) 
 
 re: fclean all
 
 
 
-test: libs
+test: all libs
 
 libs:
 	-@$(foreach lib,$(EXLIBS),   git clone --recurse-submodules $($(lib)LINK) test/$($(lib)PATH);)
 	@$(foreach lib,$(EXLIBS),  make test CFLAGS=$(CFLAGS) -C ./test/$($(lib)PATH);)
+	@$(foreach lib,$(EXLIBS),  make CFLAGS=$(CFLAGS) -C ./test/$($(lib)PATH);)
 	$(foreach lib,$(EXLIBS), $(eval TESTINC += -I./test/$($(lib)PATH)))
-	$(foreach lib,$(EXLIBS), $(eval TESTLIB += ./test/$($(lib)PATH)/$($(lib).a)))
+	$(foreach lib,$(EXLIBS), $(eval TESTLIB += ./test/$($(lib)PATH)/$($(lib)).a))
 	
-	$(CC)  $(CFLAGS) -I./ $(TESTINC) $(TESTLIB) ./test/main.c -o test && cd test && ./test
+	$(CC)  $(CFLAGS) -I./ $(TESTINC) $(TESTLIB) $(NAME) ./test/main.c -o test/run
 
 
 #link: $(LINKS)
