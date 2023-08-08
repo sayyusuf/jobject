@@ -1,9 +1,17 @@
-#include "cjson.h"
+#include <jobject.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 	
-	
+static char *ft_strdup(const char *str)
+{
+	char *s;
+
+	s = malloc(strlen(str) + 1);
+	strcpy(s, str);
+	return (s);	
+}
+
 static char *
 J_bool_stringify(bool_t b)
 {
