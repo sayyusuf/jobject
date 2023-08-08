@@ -1,5 +1,5 @@
-NAME = jobject.a
-
+NAME = libjobject.a
+LIBNAME = jobject
 _SRC = jobject.c stringify.c parser.c 
 
 _OBJ = $(_SRC:.c=.o)
@@ -64,9 +64,10 @@ libs:
 	@$(foreach lib,$(EXLIBS),  make test CFLAGS=$(CFLAGS) -C ./test/$($(lib)PATH);)
 	@$(foreach lib,$(EXLIBS),  make CFLAGS=$(CFLAGS) -C ./test/$($(lib)PATH);)
 	$(foreach lib,$(EXLIBS), $(eval TESTINC += -I./test/$($(lib)PATH)))
-	$(foreach lib,$(EXLIBS), $(eval TESTLIB += ./test/$($(lib)PATH)/$($(lib)).a))
+	$(foreach lib,$(EXLIBS), $(eval TESTLIB += -l $($(lib))))
+	$(foreach lib,$(EXLIBS), $(eval TESTLIBDIR += -L./test/$($(lib)PATH) -l $($(lib))))
 	
-	$(CC)  $(CFLAGS) -I./ $(TESTINC) $(TESTLIB) $(NAME) ./test/main.c -o test/run
+	$(CC)  $(CFLAGS) -I./ $(TESTINC) -L. $(TESTLIBDIR)  ./test/main.c  -l$(LIBNAME) $(TESTLIB)  -o test/run
 
 
 #link: $(LINKS)

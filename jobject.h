@@ -165,7 +165,7 @@ int
 JObject_map_erase(JObject_t *map, const char *key);
 
 int
-JObject_mP_iter(JObject_t *map, void *any,  void(*f)(const char *key, JObject_t *val_addr, void *any));
+JObject_map_iter(JObject_t *map, void *any,  void(*f)(const char *key, JObject_t *val_addr, void *any));
 
 
 
