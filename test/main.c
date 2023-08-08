@@ -6,7 +6,7 @@
 
 #include <str_lexer.h>
 #include <cmap.h>
-#include <cvec/cvec.h>
+#include <cvec.h>
 #include <jobject.h>
 #include <assert.h>
 

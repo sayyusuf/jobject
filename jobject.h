@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#include "cmap/cmap.h"
-#include "cvec/cvec.h"
+#include "cmap.h"
+#include "cvec.h"
 
 
 typedef double  number_t;

@@ -40,7 +40,7 @@ $(NAME): $(_OBJ)
 	$(CC)  $(CFLAGS) -I./ $(INC) -c $< -o $@
 
 $(EXLIBS):
-	-cd ../ && git clone --recurse-submodules $($@LINK)
+	-cd ../ && git clone --recurse-submodules $($@LINK) && echo $($@LINK) OK.
 	$(eval INC += -I../$($@PATH))
 
 clean : 
@@ -61,13 +61,13 @@ test: all libs
 
 libs:
 	-@$(foreach lib,$(EXLIBS),   git clone --recurse-submodules $($(lib)LINK) test/$($(lib)PATH);)
-	@$(foreach lib,$(EXLIBS),  make test CFLAGS=$(CFLAGS) -C ./test/$($(lib)PATH);)
+	-@$(foreach lib,$(EXLIBS),  make test CFLAGS=$(CFLAGS) -C ./test/$($(lib)PATH);)
 	@$(foreach lib,$(EXLIBS),  make CFLAGS=$(CFLAGS) -C ./test/$($(lib)PATH);)
 	$(foreach lib,$(EXLIBS), $(eval TESTINC += -I./test/$($(lib)PATH)))
 	$(foreach lib,$(EXLIBS), $(eval TESTLIB += -l $($(lib))))
 	$(foreach lib,$(EXLIBS), $(eval TESTLIBDIR += -L./test/$($(lib)PATH) -l $($(lib))))
-	
-	$(CC)  $(CFLAGS) -I./ $(TESTINC) -L. $(TESTLIBDIR)  ./test/main.c  -l$(LIBNAME) $(TESTLIB)  -o test/run
+	@echo 	*********************************************/\*********************************************
+	$(CC)  $(CFLAGS) -I./ $(TESTINC) -L. $(TESTLIBDIR)  ./test/main.c  -l$(LIBNAME) $(TESTLIB)  -o test/run && cd test && ./run
 
 
 #link: $(LINKS)
