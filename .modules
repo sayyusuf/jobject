@@ -1,9 +1,0 @@
-[submodule "cvec"]
-	path = cvec
-	url = https://github.com/sayyusuf/cvec.git
-[submodule "cmap"]
-	path = cmap
-	url = https://github.com/sayyusuf/cmap.git
-[submodule "--force"]
-	path = --force
-	url = https://github.com/sayyusuf/str_parser.git
