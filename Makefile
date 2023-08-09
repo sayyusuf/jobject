@@ -1,8 +1,9 @@
 NAME = libjobject.a
 LIBNAME = jobject
 _SRC = jobject.c stringify.c parser.c 
-
 _OBJ = $(_SRC:.c=.o)
+
+
 
 EXLIB1 = str_lexer
 EXLIB1PATH = str_lexer
@@ -16,7 +17,6 @@ EXLIB3 =  cvec
 EXLIB3PATH = cvec
 EXLIB3LINK = https://github.com/sayyusuf/cvec.git
 
-
 EXLIBS=	EXLIB1	\
 	EXLIB2	\
 	EXLIB3
@@ -28,7 +28,7 @@ EXLIBS=	EXLIB1	\
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror 
 
-.PHONY: all clean fclean re libs  test
+.PHONY: all clean fclean re libs  test update
 
 all : $(EXLIBS)  $(NAME)
 
@@ -42,6 +42,11 @@ $(NAME): $(_OBJ)
 $(EXLIBS):
 	-cd ../ && git clone --recurse-submodules $($@LINK) && echo $($@LINK) OK.
 	$(eval INC += -I../$($@PATH))
+
+update:
+	git pull
+	-@$(foreach lib,$(EXLIBS), make update -C ./test/$($(lib)PATH);)
+	-@$(foreach lib,$(EXLIBS), make update -C ../$($(lib)PATH);)
 
 clean : 
 	-rm -f $(_OBJ)
