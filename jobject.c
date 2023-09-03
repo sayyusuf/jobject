@@ -3,15 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static char *ft_strdup(const char *str)
-{
-	char *s;
-
-	s = malloc(strlen(str) + 1);
-	strcpy(s, str);
-	return (s);	
-}
-
 JObject_t
 JObject_new(enum jtype type)
 {
@@ -185,7 +176,7 @@ JObject_string_set(JObject_t *obj, const char *str)
 	{
 		if (obj->data.string)
 			free(obj->data.string);
-		obj->data.string =  ft_strdup(str);
+		obj->data.string =  strdup(str);
 		if (!obj->data.string)
 			return (-1);
 	}
@@ -278,7 +269,7 @@ JObject_map_insert(JObject_t *map, const char *key, JObject_t *value)
 {
 	if (!map || map->type != map_e || !key || !value || value->type == undef_e)
 		return (-1);
-	if (cmap_insert(&map->data.map, ft_strdup(key), value) < 0)
+	if (cmap_insert(&map->data.map, strdup(key), value) < 0)
 		return (-1);
 	return (0);
 }

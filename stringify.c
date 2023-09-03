@@ -3,27 +3,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 	
-static char *ft_strdup(const char *str)
-{
-	char *s;
-
-	s = malloc(strlen(str) + 1);
-	strcpy(s, str);
-	return (s);	
-}
-
 static char *
 J_bool_stringify(bool_t b)
 {
 	if (b)
-		return (ft_strdup("true"));
-	return (ft_strdup("false"));
+		return (strdup("true"));
+	return (strdup("false"));
 }
 
 static char *
 J_null_stringify(void)
 {
-		return (ft_strdup("null"));
+		return (strdup("null"));
 }
 
 static char *
@@ -32,7 +23,7 @@ J_number_stringify(number_t num)
 	char output[50];
 
 	snprintf(output, 50, "%f", num);
-	return (ft_strdup(output));	
+	return (strdup(output));	
 }
 
 static char *
@@ -61,7 +52,7 @@ arry_callback(void *element_addr, void *any)
 	char *s;
 	if (vec->size > 1)
 	{
-		s = ft_strdup(",");
+		s = strdup(",");
 		cvec_push(vec, &s);
 	}
 	s = JObject_stringify(obj);
@@ -102,10 +93,10 @@ J_array_stringify(cvec_t *arry)
 	size_t	len;
 
 	cvec_init(&vec, sizeof(char *), 4);
-	s = ft_strdup("[");
+	s = strdup("[");
 	cvec_push(&vec, &s);
 	cvec_iter(arry, &vec, arry_callback);
-	s = ft_strdup("]");
+	s = strdup("]");
 	cvec_push(&vec, &s);
 	len = 0;
 	cvec_iter(&vec, &len, str_size);
@@ -129,7 +120,7 @@ map_callback(void *key, void *val_addr, void *any)
 
 	if (vec->size > 1)
 	{
-		s = ft_strdup(",");
+		s = strdup(",");
 		cvec_push(vec, &s);
 	}
 	tmp = J_string_stringify(key);
@@ -154,10 +145,10 @@ J_map_stringify(cmap_t *map)
 	size_t	len;
 
 	cvec_init(&vec, sizeof(char *), 4);
-	s = ft_strdup("{");
+	s = strdup("{");
 	cvec_push(&vec, &s);
 	cmap_iter(map, &vec, map_callback);
-	s = ft_strdup("}");
+	s = strdup("}");
 	cvec_push(&vec, &s);
 	len = 0;
 	cvec_iter(&vec, &len, str_size);
