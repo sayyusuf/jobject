@@ -9,33 +9,8 @@
 #include <cvec.h>
 #include <jobject.h>
 #include <assert.h>
-
-
-static char *ft_strdup(const char *str)
-{
-	char *s;
-
-	s = malloc(strlen(str) + 1);
-	strcpy(s, str);
-	return (s);	
-}
-
-
-
-static char *ft_strndup(const char *str, size_t n)
-{
-	size_t	len;
-	char *s;
-
-	len = strlen(str);
-	if (n > len)
-		n = len;
-	s = malloc(n + 1);
-	strncpy(s, str, n);
-	s[n] = 0;
-	return (s);	
-}
-
+#include <fcntl.h>
+#include <unistd.h>
 
 
 int	keys_f(const char **text, unsigned int *index, void *data_struct, const rule_info_t *info);
@@ -61,7 +36,7 @@ int	keys_f(const char **text, unsigned int *index, void *data_struct, const rule
 	(*index) += strlen(info->key);
 	(*text) += *index;
 	*index = 0;
-	s = ft_strdup(info->key);
+	s = strdup(info->key);
 	cvec_push(vec, &s);
 	return (LEXER_SUCCESS);
 }
@@ -94,7 +69,7 @@ int	quotes_f(const char **text, unsigned int *index, void *data_struct, const ru
 		++i;
 	if(!(*text)[i])
 		return (-LEXER_ERROR);
-	s = ft_strndup(*text, i + 1);
+	s = strndup(*text, i + 1);
 	vec = data_struct;
 	cvec_push(vec, &s);
 	(*text) += i + 1;
@@ -114,7 +89,7 @@ int	numbers_f(const char **text, unsigned int *index, void *data_struct, const r
 		++i;
 	if(!(*text)[i])
 		return (-LEXER_ERROR);
-	s = ft_strndup(*text, i);
+	s = strndup(*text, i);
 	vec = data_struct;
 	cvec_push(vec, &s);
 	(*text) += i;
@@ -136,7 +111,6 @@ void test(void *data_addr ,void * any)
 
 int main()
 {
-	const char *s1 = "[   { \"dd\": 555555,  \"hello\":  \"hi\"    }, true, 0.23234545345, null]";
 /*
 	size_t index;
 
@@ -177,18 +151,27 @@ int main()
 	JObject_destroy(&array);
 */
 
+	char buff[20000];
+	int fd;
+	int res;
+	fd = open("res.json", O_RDONLY);
+	assert(0 < fd);
+	res = read(fd, buff, 20000);
+	assert(0 < res);
+	buff[res] = 0;
 
 	size_t index;
 	cvec_t	vec;
 	cvec_init(&vec, sizeof(char *), 4);
-	str_lexer(s1, &vec, rules, &index);
+	printf("lexer_satus %d\n",str_lexer(buff, &vec, rules, &index));
 
 	assert(!cvec_iter(&vec, NULL, test));
-	
+	printf("vec len %ld\n", vec.size);	
 	JObject_t obj;
 	if (!JObject_parser(&vec, &obj))	
 	{
 		char * s= JObject_stringify(&obj);
+		write(open("tmp.json", O_CREAT | O_WRONLY | O_TRUNC, 0777), s, strlen(s));
 		printf("%s\n", s);
 		free(s);
 	}
